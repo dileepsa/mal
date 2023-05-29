@@ -1,7 +1,7 @@
 const readline = require('readline');
 const { read_str } = require('./reader.js');
 const { pr_str } = require('./printer.js');
-const { MalSymbol, MalList, MalValue, MalVector } = require('./types.js');
+const { MalSymbol, MalList, MalValue, MalVector, MalHashMap } = require('./types.js');
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -24,7 +24,16 @@ const eval_ast = (ast, env) => {
     return new MalList(newAst);
   }
 
+  if (ast instanceof MalVector) {
+    const newAst = ast.value.map(x => EVAL(x, env));
+    return new MalVector(newAst);
+  }
+  if (ast instanceof MalHashMap) {
+    const newAst = ast.value.map(x => EVAL(x, env));
+    return new MalHashMap(newAst);
+  }
   return ast;
+
 }
 
 const READ = str => read_str(str);
@@ -42,7 +51,7 @@ const EVAL = (ast, env) => {
   return fn.apply(null, args);
 };
 
-const PRINT = malValue => pr_str(malValue);
+const PRINT = malValue => malValue.toString();
 
 const rep = str => PRINT(EVAL(READ(str), env));
 

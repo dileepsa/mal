@@ -1,4 +1,4 @@
-const { MalSymbol, MalBoolean, MalValue, MalList, MalVector, MalNil } = require('./types.js');
+const { MalSymbol, MalString, MalKeyword, MalBoolean, MalValue, MalList, MalVector, MalNil, MalHashMap } = require('./types.js');
 const REG_EXP = /[\s,]*(~@|[\[\]{}()'`~^@]|"(?:\\.|[^\\"])*"?|;.*|[^\s\[\]{}('"`,;)]*)/g;
 
 class Reader {
@@ -69,6 +69,20 @@ const read_seq = (reader, closingSymbol) => {
   return ast;
 }
 
+const read_hash_map = (reader) => {
+  const ast = read_seq(reader, '}')
+  return new MalHashMap(ast);
+}
+
+const read_keyword = (reader) => {
+  return new MalKeyword(reader.next());
+}
+
+const read_string = (reader) => {
+  return new MalString(reader.next());
+}
+
+
 const read_form = reader => {
   const token = reader.peek();
 
@@ -77,6 +91,12 @@ const read_form = reader => {
       return read_list(reader)
     case '[':
       return read_vector(reader)
+    case '{':
+      return read_hash_map(reader)
+    case ':':
+      return read_keyword(reader)
+    case '"':
+      return read_string(reader)
     default:
       return read_atom(reader);
   }

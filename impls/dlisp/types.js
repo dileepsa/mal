@@ -3,7 +3,7 @@ class MalValue {
     this.value = value
   }
 
-  pr_str() {
+  toString() {
     return this.value.toString();
   }
 }
@@ -22,8 +22,9 @@ class MalList extends MalValue {
   isEmpty() {
     return this.value.length == 0;
   }
-  pr_str() {
-    return '(' + this.value.map(x => x.pr_str()).join(' ') + ')';
+
+  toString() {
+    return '(' + this.value.map(x => x.toString()).join(' ') + ')';
   }
 }
 
@@ -32,8 +33,8 @@ class MalVector extends MalValue {
     super(value)
   }
 
-  pr_str() {
-    return '[' + this.value.map(x => x.pr_str()).join(' ') + ']';
+  toString() {
+    return '[' + this.value.map(x => x.toString()).join(' ') + ']';
   }
 }
 
@@ -42,7 +43,7 @@ class MalNil extends MalValue {
     super(null)
   }
 
-  pr_str() {
+  toString() {
     return "nil";
   }
 }
@@ -51,10 +52,43 @@ class MalBoolean extends MalValue {
   constructor(args) {
     super(args)
   }
+}
 
-  pr_str() {
+class MalKeyword extends MalValue {
+  constructor(args) {
+    super(args)
+  }
+
+  toString() {
     return this.value.toString();
   }
 }
 
-module.exports = { MalSymbol, MalValue, MalList, MalVector, MalNil, MalBoolean };
+class MalString extends MalValue {
+  constructor(args) {
+    super(args)
+  }
+
+  toString() {
+    return this.value.toString();
+  }
+}
+
+class MalHashMap extends MalValue {
+  constructor(args) {
+    super(args)
+  }
+
+  #displayObject(x, i) {
+    if ((i + 1) % 2 == 0) {
+      return `${x},`;
+    }
+    return x;
+  }
+
+  toString() {
+    return '{' + this.value.map(this.#displayObject).join(' ').slice(0, -1) + '}';
+  }
+}
+
+module.exports = { MalSymbol, MalValue, MalList, MalVector, MalNil, MalBoolean, MalHashMap, MalKeyword, MalString };
