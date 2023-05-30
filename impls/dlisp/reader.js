@@ -82,7 +82,6 @@ const read_string = (reader) => {
   return new MalString(reader.next());
 }
 
-
 const read_form = reader => {
   const token = reader.peek();
 
