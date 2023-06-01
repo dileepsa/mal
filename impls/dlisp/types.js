@@ -69,6 +69,7 @@ class MalString extends MalValue {
     super(args)
   }
 
+
   toString() {
     return this.value.toString();
   }

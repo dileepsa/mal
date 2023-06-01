@@ -4,7 +4,7 @@ const pr_str = malValue => {
   if (malValue instanceof MalValue) {
     return malValue.pr_str();
   }
-
+  console.log("in prstr", malValue)
   return malValue.toString();
 }
 
