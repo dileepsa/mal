@@ -1,11 +1,9 @@
-const { MalValue } = require('./types.js');
-
-const pr_str = malValue => {
-  if (malValue instanceof MalValue) {
-    return malValue.pr_str();
+const toString = malValue => {
+  if (typeof (malValue) === 'function') {
+    return "#<function>";
   }
-  console.log("in prstr", malValue)
-  return malValue.toString();
+
+  return malValue.toString()
 }
 
-module.exports = { pr_str };
+module.exports = { toString };

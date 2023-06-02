@@ -1,6 +1,8 @@
 const readline = require('readline');
 const { read_str } = require('./reader.js');
 const { Env } = require('./env.js');
+const { ns } = require('./core.js');
+const { toString } = require('./printer.js');
 const { MalSymbol, MalList, MalValue, MalVector, MalHashMap, MalNil } = require('./types.js');
 
 const rl = readline.createInterface({
@@ -49,8 +51,7 @@ const handleLet = (ast, env) => {
 
 const handleIf = (ast, env) => {
   const condResult = EVAL(ast.value[1], env);
-
-  if (condResult.value != "nil" && condResult.value !== false) {
+  if (condResult != "nil" && condResult != false) {
     return EVAL(ast.value[2], env);
   }
 
@@ -106,25 +107,10 @@ const EVAL = (ast, env) => {
   return fn.apply(null, args);
 };
 
-const PRINT = malValue => {
-  return malValue.toString()
-};
+const PRINT = malValue => toString(malValue);
 
 const env = new Env();
-
-env.set(new MalSymbol('+'), (...args) => args.reduce((a, b) => a + b));
-env.set(new MalSymbol('*'), (...args) => args.reduce((a, b) => a * b));
-env.set(new MalSymbol('/'), (...args) => args.reduce((a, b) => a / b));
-env.set(new MalSymbol('-'), (...args) => args.reduce((a, b) => a - b));
-env.set(new MalSymbol('<'), (...args) => args[0] < args[1]);
-env.set(new MalSymbol('>'), (...args) => args[0] > args[1]);
-env.set(new MalSymbol('<='), (...args) => args[0] <= args[1]);
-env.set(new MalSymbol('>='), (...args) => args[0] >= args[1]);
-env.set(new MalSymbol('='), (...args) => args[0] === args[1]);
-env.set(new MalSymbol('list'), (...args) => new MalList(args));
-env.set(new MalSymbol('list?'), (args) => args instanceof MalList);
-env.set(new MalSymbol('empty?'), (...args) => args[0].value === undefined);
-env.set(new MalSymbol('count'), (...args) => args[0].value.length);
+Object.entries(ns).forEach(([symbol, val]) => env.set(new MalSymbol(symbol), val));
 
 const rep = str => PRINT(EVAL(READ(str), env));
 
@@ -132,7 +118,6 @@ const repl = () =>
   rl.question('user> ', line => {
     try {
       console.log(rep(line));
-
     } catch (e) {
       console.log(e);
     }

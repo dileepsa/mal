@@ -87,9 +87,23 @@ class MalHashMap extends MalValue {
     return x;
   }
 
+  isEqual(otherVal) {
+    return otherVal instanceof MalHashMap && this.value === otherVal.value;
+  }
+
   toString() {
     return '{' + this.value.map(this.#displayObject).join(' ').slice(0, -1) + '}';
   }
 }
 
-module.exports = { MalSymbol, MalValue, MalList, MalVector, MalNil, MalBoolean, MalHashMap, MalKeyword, MalString };
+module.exports = {
+  MalSymbol,
+  MalValue,
+  MalList,
+  MalVector,
+  MalNil,
+  MalBoolean,
+  MalHashMap,
+  MalKeyword,
+  MalString
+};

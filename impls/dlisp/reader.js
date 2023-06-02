@@ -40,6 +40,10 @@ const read_atom = (reader) => {
     return new MalNil();
   }
 
+  if (token.startsWith('"') && token.endsWith('"')) {
+    return new MalString(token.slice(1, - 1))
+  }
+
   return new MalSymbol(token);
 }
 
@@ -78,10 +82,6 @@ const read_keyword = (reader) => {
   return new MalKeyword(reader.next());
 }
 
-const read_string = (reader) => {
-  return new MalString(reader.next());
-}
-
 const read_form = reader => {
   const token = reader.peek();
 
@@ -94,8 +94,6 @@ const read_form = reader => {
       return read_hash_map(reader)
     case ':':
       return read_keyword(reader)
-    case '"':
-      return read_string(reader)
     default:
       return read_atom(reader);
   }
