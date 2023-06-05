@@ -12,6 +12,9 @@ class MalSymbol extends MalValue {
   constructor(value) {
     super(value);
   }
+  isEqual(otherVal) {
+    return otherVal instanceof MalSymbol && this.value === otherVal;
+  }
 }
 
 class MalList extends MalValue {
@@ -21,6 +24,10 @@ class MalList extends MalValue {
 
   isEmpty() {
     return this.value.length == 0;
+  }
+
+  isEqual(otherVal) {
+    return otherVal instanceof MalList && this.value === otherVal;
   }
 
   toString() {
@@ -33,6 +40,10 @@ class MalVector extends MalValue {
     super(value)
   }
 
+  isEqual(otherVal) {
+    return otherVal instanceof MalVector && this.value === otherVal;
+  }
+
   toString() {
     return '[' + this.value.map(x => x.toString()).join(' ') + ']';
   }
@@ -43,6 +54,9 @@ class MalNil extends MalValue {
     super(null)
   }
 
+  isEqual(otherVal) {
+    return otherVal instanceof Malnil && this.value === otherVal;
+  }
   toString() {
     return "nil";
   }
@@ -52,6 +66,12 @@ class MalBoolean extends MalValue {
   constructor(args) {
     super(args)
   }
+  isEqual(otherVal) {
+    return otherVal instanceof MalBoolean && this.value === otherVal;
+  }
+  toString() {
+    return this.value;
+  }
 }
 
 class MalKeyword extends MalValue {
@@ -59,8 +79,8 @@ class MalKeyword extends MalValue {
     super(args)
   }
 
-  toString() {
-    return this.value.toString();
+  isEqual(otherVal) {
+    return otherVal instanceof MalKeyword && this.value === otherVal.value;
   }
 }
 
@@ -69,11 +89,27 @@ class MalString extends MalValue {
     super(args)
   }
 
+  isEqual(otherVal) {
+    return otherVal instanceof MalString && this.value === otherVal.value;
+  }
 
   toString() {
-    return this.value.toString();
+    return `"${this.value}"`;
   }
 }
+
+class MalFunction extends MalValue {
+  constructor(ast, binds, env) {
+    super(ast);
+    this.binds = binds;
+    this.env = env;
+  }
+
+  toString() {
+    return "#<function>";
+  }
+}
+
 
 class MalHashMap extends MalValue {
   constructor(args) {
@@ -97,6 +133,7 @@ class MalHashMap extends MalValue {
 }
 
 module.exports = {
+  MalFunction,
   MalSymbol,
   MalValue,
   MalList,

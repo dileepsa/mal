@@ -20,7 +20,9 @@ const ns = {
   'list': (...args) => new MalList(args),
   'list?': (args) => args instanceof MalList,
   'empty?': (args) => args.value === undefined,
-  'count': (args) => args.value.length,
+  'count': (args) => {
+    return args.value.length
+  },
   'not': args => !args,
   'prn': (...args) => {
     const result = args.map(x => x.value ? `"${x.value}"` : x);
