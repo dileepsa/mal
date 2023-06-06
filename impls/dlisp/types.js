@@ -26,7 +26,8 @@ class MalSymbol extends MalValue {
 }
 
 const createMalString = (str) => {
-  return str.replace(/\\(.)/g, (y, captured) => captured === 'n' ? '\n' : captured);
+  const readableString = str.replace(/\\(.)/g, (y, captured) => captured === 'n' ? '\n' : captured);
+  return new MalString(readableString);
 }
 
 class MalSequence extends MalValue { }

@@ -44,7 +44,6 @@ const ns = {
   'slurp': (fileName) => {
     return new MalString(fs.readFileSync(fileName.value, 'utf-8'));
   },
-
   'atom': value => {
     return new MalAtom(value)
   },

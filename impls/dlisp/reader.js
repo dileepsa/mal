@@ -1,4 +1,12 @@
-const { MalSymbol, MalString, MalKeyword, MalBoolean, MalValue, MalList, MalVector, MalNil, MalHashMap, createMalString } = require('./types.js');
+const { MalSymbol,
+  MalKeyword,
+  MalBoolean,
+  MalList,
+  MalVector,
+  MalNil,
+  MalHashMap,
+  createMalString } = require('./types.js');
+
 const REG_EXP = /[\s,]*(~@|[\[\]{}()'`~^@]|"(?:\\.|[^\\"])*"?|;.*|[^\s\[\]{}('"`,;)]*)/g;
 
 class Reader {
@@ -45,8 +53,7 @@ const read_atom = (reader) => {
   }
 
   if (token.startsWith('"') && token.endsWith('"')) {
-    const str = createMalString(token.slice(1, -1));
-    return new MalString(str);
+    return createMalString(token.slice(1, -1));
   }
 
   return new MalSymbol(token);

@@ -3,8 +3,13 @@ const { read_str } = require('./reader.js');
 const { Env } = require('./env.js');
 const { ns } = require('./core.js');
 const { toString } = require('./printer.js');
-const { MalSymbol, MalList,
-  MalFunction, MalVector, MalSequence, MalHashMap, MalNil } = require('./types.js');
+const { MalSymbol,
+  MalList,
+  MalFunction,
+  MalVector,
+  MalSequence,
+  MalHashMap,
+  MalNil } = require('./types.js');
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -130,24 +135,31 @@ const EVAL = (ast, env) => {
   }
 };
 
+const handleMalSequence = (ast, env) => {
+  let result = new MalList([]);
+
+  for (let index = ast.value.length - 1; index >= 0; index--) {
+    const element = ast.value[index];
+
+    if (element instanceof MalList && element.beginsWith('splice-unquote')) {
+      result = new MalList(
+        [new MalSymbol('concat'), element.value[1], result]);
+    } else {
+      result = new MalList(
+        [new MalSymbol('cons'), quasiquote(element), result]);
+    }
+  }
+
+  return result;
+}
+
 const quasiquote = (ast, env) => {
   if (ast instanceof MalList && ast.beginsWith('unquote')) {
     return ast.value[1];
   }
 
   if (ast instanceof MalSequence) {
-    let result = new MalList([]);
-
-    for (let index = ast.value.length - 1; index >= 0; index--) {
-      const element = ast.value[index];
-      if (element instanceof MalList && element.beginsWith('splice-unquote')) {
-        result = new MalList(
-          [new MalSymbol('concat'), element.value[1], result]);
-      } else {
-        result = new MalList(
-          [new MalSymbol('cons'), quasiquote(element), result]);
-      }
-    }
+    let result = handleMalSequence(ast, env);
 
     if (ast instanceof MalList) {
       return result;
