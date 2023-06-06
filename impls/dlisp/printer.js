@@ -1,9 +1,3 @@
-const toString = malValue => {
-  if (typeof (malValue) === 'function') {
-    return "#<function>";
-  }
-
-  return malValue.toString()
-}
+const { toString } = require('./types.js');
 
 module.exports = { toString };

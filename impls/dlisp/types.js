@@ -1,9 +1,17 @@
+const toString = (val, print_readably = false) => {
+  if (val instanceof MalValue) {
+    return val.toString(print_readably);
+  }
+
+  return val.toString();
+}
+
 class MalValue {
   constructor(value) {
     this.value = value
   }
 
-  toString() {
+  toString(printReadbly = false) {
     return this.value.toString();
   }
 }
@@ -15,6 +23,10 @@ class MalSymbol extends MalValue {
   isEqual(otherVal) {
     return otherVal instanceof MalSymbol && this.value === otherVal;
   }
+}
+
+const createMalString = (str) => {
+  return str.replace(/\\(.)/g, (y, captured) => captured === 'n' ? '\n' : captured);
 }
 
 class MalList extends MalValue {
@@ -30,8 +42,8 @@ class MalList extends MalValue {
     return otherVal instanceof MalList && this.value === otherVal;
   }
 
-  toString() {
-    return '(' + this.value.map(x => x.toString()).join(' ') + ')';
+  toString(printReadbly = false) {
+    return '(' + this.value.map(x => toString(x)).join(' ') + ')';
   }
 }
 
@@ -44,8 +56,8 @@ class MalVector extends MalValue {
     return otherVal instanceof MalVector && this.value === otherVal;
   }
 
-  toString() {
-    return '[' + this.value.map(x => x.toString()).join(' ') + ']';
+  toString(printReadbly = false) {
+    return '[' + this.value.map(x => toString(x, printReadbly)).join(' ') + ']';
   }
 }
 
@@ -57,7 +69,7 @@ class MalNil extends MalValue {
   isEqual(otherVal) {
     return otherVal instanceof Malnil && this.value === otherVal;
   }
-  toString() {
+  toString(printReadbly = false) {
     return "nil";
   }
 }
@@ -69,7 +81,8 @@ class MalBoolean extends MalValue {
   isEqual(otherVal) {
     return otherVal instanceof MalBoolean && this.value === otherVal;
   }
-  toString() {
+
+  toString(printReadbly = false) {
     return this.value;
   }
 }
@@ -93,23 +106,34 @@ class MalString extends MalValue {
     return otherVal instanceof MalString && this.value === otherVal.value;
   }
 
-  toString() {
+  toString(printReadbly = false) {
+    if (printReadbly) {
+      return '"' + this.value
+        .replace(/\\/g, "\\\\")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, "\\n") + '"';
+    }
+
     return `"${this.value}"`;
   }
 }
 
 class MalFunction extends MalValue {
-  constructor(ast, binds, env) {
+  constructor(ast, binds, env, fn) {
     super(ast);
     this.binds = binds;
     this.env = env;
+    this.fn = fn
   }
 
-  toString() {
+  toString(printReadbly = false) {
     return "#<function>";
   }
-}
 
+  apply(ctx, args) {
+    return this.fn.apply(ctx, args);
+  }
+}
 
 class MalHashMap extends MalValue {
   constructor(args) {
@@ -127,12 +151,37 @@ class MalHashMap extends MalValue {
     return otherVal instanceof MalHashMap && this.value === otherVal.value;
   }
 
-  toString() {
+  toString(printReadbly = false) {
     return '{' + this.value.map(this.#displayObject).join(' ').slice(0, -1) + '}';
   }
 }
 
+class MalAtom extends MalValue {
+  constructor(args) {
+    super(args)
+  }
+
+  toString(printReadbly = false) {
+    return `(atom ${toString(this.value, printReadbly)})`
+  };
+
+  deref() {
+    return this.value;
+  }
+
+  reset(value) {
+    this.value = value;
+    return this.value
+  }
+
+  swap(f, args) {
+    this.value = f.apply(null, [this.value, ...args]);
+    return this.value;
+  }
+}
+
 module.exports = {
+  MalAtom,
   MalFunction,
   MalSymbol,
   MalValue,
@@ -142,5 +191,7 @@ module.exports = {
   MalBoolean,
   MalHashMap,
   MalKeyword,
-  MalString
+  MalString,
+  createMalString,
+  toString
 };

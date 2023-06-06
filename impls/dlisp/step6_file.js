@@ -75,7 +75,12 @@ const handleFn = (ast, env) => {
   const [bindings, ...body] = ast.value.slice(1);
   const doForms = new MalList([new MalSymbol('do'), ...body]);
 
-  return new MalFunction(doForms, bindings, env);
+  const fn = (...args) => {
+    const newEnv = new Env(env, bindings.value, args);
+    return EVAL(ast.value[2], newEnv);
+  }
+
+  return new MalFunction(doForms, bindings, env, fn);
 }
 
 const EVAL = (ast, env) => {
@@ -117,12 +122,16 @@ const EVAL = (ast, env) => {
   }
 };
 
-const PRINT = malValue => toString(malValue);
+const PRINT = malValue => toString(malValue, true);
+
+const rep = str => PRINT(EVAL(READ(str), env));
 
 const env = new Env();
 Object.entries(ns).forEach(([symbol, val]) => env.set(new MalSymbol(symbol), val));
+env.set(new MalSymbol("eval"), (ast) => EVAL(ast, env));
+env.set(new MalSymbol("*ARGV*"), new MalList(process.argv.slice(2)));
 
-const rep = str => PRINT(EVAL(READ(str), env));
+rep('(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))');
 
 const repl = () =>
   rl.question('user> ', line => {
@@ -134,4 +143,9 @@ const repl = () =>
     repl();
   });
 
-repl();
+if (process.argv.length >= 3) {
+  rep(`(load-file "${process.argv[2]}")`)
+  rl.close()
+} else {
+  repl();
+}

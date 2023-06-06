@@ -1,5 +1,7 @@
-const { MalList, MalNil, MalString } = require("./types");
+const { MalList, MalNil, MalString, MalAtom, createMalString } = require("./types");
 const { isEqual } = require('./isEqual.js');
+const { read_str } = require("./reader");
+const fs = require('fs');
 
 const getValues = (args) => {
   return args.map(x => x.value ? x.value : x);
@@ -20,9 +22,7 @@ const ns = {
   'list': (...args) => new MalList(args),
   'list?': (args) => args instanceof MalList,
   'empty?': (args) => args.value === undefined,
-  'count': (args) => {
-    return args.value.length
-  },
+  'count': (args) => args.value.length,
   'not': args => !args,
   'prn': (...args) => {
     const result = args.map(x => x.value ? `"${x.value}"` : x);
@@ -39,7 +39,21 @@ const ns = {
   },
   'str': (...args) => {
     return new MalString(getValues(args).join(''));
-  }
+  },
+  'read-string': (str) => read_str(str.value),
+  'slurp': (fileName) => {
+    return new MalString(fs.readFileSync(fileName.value, 'utf-8'));
+  },
+
+  'atom': value => {
+    return new MalAtom(value)
+  },
+  'atom?': value => {
+    return value instanceof MalAtom
+  },
+  'deref': value => value.deref(),
+  'swap!': (atom, f, ...args) => atom.swap(f, args),
+  'reset!': (currentVal, val) => currentVal.reset(val)
 }
 
 module.exports = { ns };

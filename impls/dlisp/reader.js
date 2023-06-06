@@ -1,4 +1,4 @@
-const { MalSymbol, MalString, MalKeyword, MalBoolean, MalValue, MalList, MalVector, MalNil, MalHashMap } = require('./types.js');
+const { MalSymbol, MalString, MalKeyword, MalBoolean, MalValue, MalList, MalVector, MalNil, MalHashMap, createMalString } = require('./types.js');
 const REG_EXP = /[\s,]*(~@|[\[\]{}()'`~^@]|"(?:\\.|[^\\"])*"?|;.*|[^\s\[\]{}('"`,;)]*)/g;
 
 class Reader {
@@ -19,7 +19,7 @@ class Reader {
 }
 
 const tokenize = (str) =>
-  [...str.matchAll(REG_EXP)].map(x => x[1]).slice(0, -1);
+  [...str.matchAll(REG_EXP)].map(x => x[1]).slice(0, -1).filter(x => !x.startsWith(';'));
 
 const read_atom = (reader) => {
   const token = reader.next();
@@ -40,8 +40,13 @@ const read_atom = (reader) => {
     return new MalNil();
   }
 
+  if (token.startsWith('@')) {
+    return new MalList([new MalSymbol('deref'), new MalSymbol(token.slice(1))]);
+  }
+
   if (token.startsWith('"') && token.endsWith('"')) {
-    return new MalString(token.slice(1, - 1))
+    const str = createMalString(token.slice(1, -1));
+    return new MalString(str);
   }
 
   return new MalSymbol(token);
@@ -94,9 +99,21 @@ const read_form = reader => {
       return read_hash_map(reader)
     case ':':
       return read_keyword(reader)
+    case ';':
+      reader.next();
+      return new MalNil();
+    case '@':
+      return prependSymbol(reader, 'deref')
     default:
       return read_atom(reader);
   }
+}
+
+const prependSymbol = (reader, symbolStr) => {
+  reader.next();
+  const symbol = new MalSymbol(symbolStr);
+  const newAst = read_form(reader);
+  return new MalList([symbol, newAst]);
 }
 
 const read_str = (str) => {
