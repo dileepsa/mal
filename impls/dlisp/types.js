@@ -29,7 +29,9 @@ const createMalString = (str) => {
   return str.replace(/\\(.)/g, (y, captured) => captured === 'n' ? '\n' : captured);
 }
 
-class MalList extends MalValue {
+class MalSequence extends MalValue { }
+
+class MalList extends MalSequence {
   constructor(value) {
     super(value)
   }
@@ -42,12 +44,16 @@ class MalList extends MalValue {
     return otherVal instanceof MalList && this.value === otherVal;
   }
 
-  toString(printReadbly = false) {
-    return '(' + this.value.map(x => toString(x)).join(' ') + ')';
+  beginsWith(symbol) {
+    return this.value.length > 0 && this.value[0].value === symbol;
+  }
+
+  toString(printReadbly) {
+    return '(' + this.value.map(x => toString(x, printReadbly)).join(' ') + ')';
   }
 }
 
-class MalVector extends MalValue {
+class MalVector extends MalSequence {
   constructor(value) {
     super(value)
   }
@@ -192,6 +198,7 @@ module.exports = {
   MalHashMap,
   MalKeyword,
   MalString,
+  MalSequence,
   createMalString,
   toString
 };
