@@ -27,7 +27,7 @@ class Reader {
 }
 
 const tokenize = (str) =>
-  [...str.matchAll(REG_EXP)].map(x => x[1]).slice(0, -1).filter(x => !x.startsWith(';'));
+  [...str.matchAll(REG_EXP)].map(x => x[1]).slice(0, -1).filter(token => !(token.startsWith(';')));
 
 const read_atom = (reader) => {
   const token = reader.next();
@@ -54,6 +54,10 @@ const read_atom = (reader) => {
 
   if (token.startsWith('"') && token.endsWith('"')) {
     return createMalString(token.slice(1, -1));
+  }
+
+  if (token.startsWith(':')) {
+    return new MalKeyword(token);
   }
 
   return new MalSymbol(token);
@@ -90,10 +94,6 @@ const read_hash_map = (reader) => {
   return new MalHashMap(ast);
 }
 
-const read_keyword = (reader) => {
-  return new MalKeyword(reader.next());
-}
-
 const read_form = reader => {
   const token = reader.peek();
 
@@ -104,11 +104,6 @@ const read_form = reader => {
       return read_vector(reader)
     case '{':
       return read_hash_map(reader)
-    case ':':
-      return read_keyword(reader)
-    case ';':
-      reader.next();
-      return new MalNil();
     case '@':
       return prependSymbol(reader, 'deref')
     case "'":

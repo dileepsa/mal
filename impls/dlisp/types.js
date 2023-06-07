@@ -30,7 +30,26 @@ const createMalString = (str) => {
   return new MalString(readableString);
 }
 
-class MalSequence extends MalValue { }
+class MalSequence extends MalValue {
+  constructor(value) {
+    super(value)
+  }
+
+  nth(n) {
+    if (n >= this.value.length) {
+      throw "index out of range"
+    }
+    return this.value[n];
+  }
+
+  first() {
+    return this.value[0] ?? new MalNil();
+  }
+
+  rest() {
+    return new MalList(this.value.slice(1));
+  }
+}
 
 class MalList extends MalSequence {
   constructor(value) {
@@ -76,8 +95,13 @@ class MalNil extends MalValue {
   isEqual(otherVal) {
     return otherVal instanceof Malnil && this.value === otherVal;
   }
+
   toString(printReadbly = false) {
     return "nil";
+  }
+
+  first() {
+    return this;
   }
 }
 
@@ -113,7 +137,7 @@ class MalString extends MalValue {
     return otherVal instanceof MalString && this.value === otherVal.value;
   }
 
-  toString(printReadbly = false) {
+  toString(printReadbly) {
     if (printReadbly) {
       return '"' + this.value
         .replace(/\\/g, "\\\\")
@@ -126,11 +150,12 @@ class MalString extends MalValue {
 }
 
 class MalFunction extends MalValue {
-  constructor(ast, binds, env, fn) {
+  constructor(ast, binds, env, fn, isMacro = false) {
     super(ast);
     this.binds = binds;
     this.env = env;
     this.fn = fn
+    this.isMacro = isMacro
   }
 
   toString(printReadbly = false) {

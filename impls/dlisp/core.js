@@ -1,4 +1,4 @@
-const { MalList, MalNil, MalString, MalAtom, createMalString, MalVector } = require("./types");
+const { MalList, MalNil, MalString, MalAtom, createMalString, MalVector, MalSequence, MalSymbol, MalBoolean } = require("./types");
 const { isEqual } = require('./isEqual.js');
 const { read_str } = require("./reader");
 const fs = require('fs');
@@ -13,16 +13,18 @@ const ns = {
   '*': (...args) => args.reduce((a, b) => a * b),
   '/': (...args) => args.reduce((a, b) => a / b),
   '<': (a, b) => a < b,
-  '>': (a, b) => a > b,
-  '<=': (a, b) => a <= b,
-  '>=': (a, b) => a >= b,
+  '>': (a, b) => new MalBoolean(a > b),
+  '<=': (a, b) => new MalBoolean(a <= b),
+  '>=': (a, b) => new MalBoolean(a >= b),
   '=': (a, b) => {
     return a.value != undefined && b.value != undefined ? isEqual(a.value, b.value) : isEqual(a, b);
   },
   'list': (...args) => new MalList(args),
   'list?': (args) => args instanceof MalList,
   'empty?': (args) => args.value === undefined,
-  'count': (args) => args.value.length,
+  'count': (args) => {
+    return args instanceof MalNil ? 0 : args.value.length
+  },
   'not': args => !args,
   'prn': (...args) => {
     const result = args.map(x => x.value ? `"${x.value}"` : x);
@@ -55,7 +57,10 @@ const ns = {
   'reset!': (currentVal, val) => currentVal.reset(val),
   'cons': (value, list) => new MalList([value, ...list.value]),
   'concat': (...lists) => new MalList(lists.flatMap(x => x.value)),
-  'vec': (list) => new MalVector(list.value)
+  'vec': (list) => new MalVector(list.value),
+  'nth': (list, n) => list.nth(n),
+  'first': (list) => list instanceof MalNil ? new MalNil() : list.first(),
+  'rest': (list) => list instanceof MalNil ? new MalList([]) : list.rest(),
 }
 
 module.exports = { ns };

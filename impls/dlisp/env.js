@@ -19,7 +19,7 @@ class Env {
       return;
     }
 
-    this.set(binds[index + 1], new MalList(exprs.slice(index + 1)));
+    this.set(binds[index + 1], new MalList(exprs.slice(index)));
   }
 
   set(symbolKey, Malvalue) {
