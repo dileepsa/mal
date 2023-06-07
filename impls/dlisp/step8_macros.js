@@ -56,7 +56,7 @@ const handleLet = (ast, env) => {
 const handleIf = (ast, env) => {
   const condResult = EVAL(ast.value[1], env);
   if (condResult.value !== false && !(condResult instanceof MalNil)) {
-    return ast.value[2];
+    return ast.value[2] ?? new MalNil();
   }
 
   if (ast.value[3] !== undefined) {
@@ -226,6 +226,7 @@ env.set(new MalSymbol("*ARGV*"), new MalList(process.argv.slice(2)));
 
 rep('(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))');
 rep('(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list \'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw "odd number of forms to cond")) (cons \'cond (rest (rest xs)))))))');
+rep("(def! not (fn* (a) (if a false true)))");
 
 const repl = () =>
   rl.question('user> ', line => {

@@ -17,7 +17,8 @@ const ns = {
   '<=': (a, b) => new MalBoolean(a <= b),
   '>=': (a, b) => new MalBoolean(a >= b),
   '=': (a, b) => {
-    return a.value != undefined && b.value != undefined ? isEqual(a.value, b.value) : isEqual(a, b);
+    const result = a.value != undefined && b.value != undefined ? isEqual(a.value, b.value) : isEqual(a, b);
+    return new MalBoolean(result);
   },
   'list': (...args) => new MalList(args),
   'list?': (args) => args instanceof MalList,
